@@ -1,21 +1,20 @@
 import {test} from "@playwright/test";
-import LoginPage from "../POM/loginPage";
-import excel from "exceljs"
+import loginPage from "../POM/loginPage.js";
+import excel from "exceljs";
 
 test("Login", async({page})=>{
-    let book=new excel.Workbook();
-    await book.xlsx.readFile("C:/Users/Dell/Desktop/SauceDemoProject/TestData/Book1.xlsx")
-    const sheet=book.getWorksheet("Sheet1");
+    let book = new excel.Workbook();
+    await book.xlsx.readFile("TestData/Book1.xlsx"); // Use relative path so Jenkins can find it inside the workspace!
+    const sheet = book.getWorksheet("Sheet1");
 
-    //Automatically detect headers
-    const headers=sheet.getRow(1).values
-    .slice(1)
-    .map(header=>String(header).trim());
+    // Read the username and password from Row 2 (Row 1 is headers)
+    const usernameVal = sheet.getRow(2).getCell(2).value; // Adjust cell number based on your columns
+    const passwordVal = sheet.getRow(2).getCell(3).value; // Adjust cell number based on your columns
 
-    // Automatically detect and process all data rows
-    
     await page.goto("https://www.saucedemo.com/");
-    let login=new LoginPage(page);
-    await login.loginToSauce();
+    let login = new loginPage(page);
+    
+    // Pass the actual variables extracted from Excel
+    await login.loginToSauce(usernameVal, passwordVal);
     await page.waitForTimeout(2000);
-})
+});
